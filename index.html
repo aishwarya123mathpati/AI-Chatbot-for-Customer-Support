@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Customer Support Chatbot</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 h-screen flex items-center justify-center">
+    <div class="w-full max-w-2xl bg-white rounded-lg shadow-md p-6">
+        <h1 class="text-2xl font-bold mb-4">Customer Support Chat</h1>
+        <div id="chat-messages" class="h-96 overflow-y-auto mb-4 p-4 border rounded"></div>
+        <form id="chat-form" class="flex">
+            <input type="text" id="user-input" class="flex-grow p-2 border rounded-l" placeholder="Type your message..." required>
+            <button type="submit" class="bg-blue-500 text-white p-2 rounded-r">Send</button>
+        </form>
+    </div>
+
+    <script>
+        const chatForm = document.getElementById('chat-form');
+        const userInput = document.getElementById('user-input');
+        const chatMessages = document.getElementById('chat-messages');
+
+        chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const message = userInput.value.trim();
+            if (!message) return;
+
+            // Add user message to chat
+            addMessage('You', message);
+
+            // Clear input
+            userInput.value = '';
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message }),
+                });
+
+                const data = await response.json();
+
+                // Add bot response to chat
+                addMessage('Bot', data.response);
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage('System', 'An error occurred. Please try again.');
+            }
+        });
+
+        function addMessage(sender, message) {
+            const messageElement = document.createElement('div');
+            messageElement.className = `mb-2 ${sender === 'You' ? 'text-right' : ''}`;
+            messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
+            chatMessages.appendChild(messageElement);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+    </script>
+</body>
+</html>
+
